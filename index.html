@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumajira — Plataforma Biónica</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════
+   TOKENS
+════════════════════════════════ */
+:root {
+  --bg:      #060810;
+  --bg2:     #0C0F1A;
+  --bg3:     #111620;
+  --bg4:     #161C2A;
+  --e:       #1BFFE0;
+  --e2:      rgba(27,255,224,0.12);
+  --e3:      rgba(27,255,224,0.06);
+  --blue:    #3A7BFF;
+  --amber:   #F5A623;
+  --coral:   #FF5C57;
+  --purple:  #8B7FFF;
+  --green:   #22D68A;
+  --white:   #F0F4FF;
+  --muted:   #6B7A9A;
+  --border:  rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --r:       10px;
+  --r2:      14px;
+  --r3:      20px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; overflow: hidden; }
+
+/* ════════════════════════════════
+   LAYOUT SHELL
+════════════════════════════════ */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  padding: 0;
+}
+.logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--e); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-mark svg { width: 18px; height: 18px; }
+.logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.03em; color: var(--white); }
+.logo-text span { color: var(--e); }
+
+.nav { padding: 14px 10px; flex: 1; overflow-y: auto; }
+.nav-section { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 6px 10px 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 10px; border-radius: var(--r);
+  cursor: pointer; color: var(--muted);
+  font-size: 13px; font-weight: 400;
+  transition: all .15s; margin-bottom: 1px;
+  border: 1px solid transparent;
+}
+.nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+.nav-item.active { color: var(--e); background: var(--e3); border-color: rgba(27,255,224,0.15); }
+.nav-item .ico { width: 16px; height: 16px; opacity: .7; flex-shrink: 0; }
+.nav-item.active .ico { opacity: 1; }
+.nav-badge { margin-left: auto; background: var(--e); color: var(--bg); font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 10px; }
+
+.sidebar-footer {
+  padding: 14px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 9px;
+}
+.user-av { width: 30px; height: 30px; border-radius: 50%; background: rgba(100,140,255,0.2); border: 1px solid rgba(100,140,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #7EB3FF; flex-shrink: 0; }
+.user-name { font-size: 12px; font-weight: 500; }
+.user-role { font-size: 10px; color: var(--muted); }
+
+/* MAIN */
+.main { flex: 1; overflow-y: auto; background: var(--bg); }
+.view { display: none; animation: fadeIn .25s ease; }
+.view.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* TOP BAR */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 28px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg); z-index: 10;
+  backdrop-filter: blur(8px);
+}
+.page-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; padding: 5px 11px; border-radius: 20px; border: 1px solid; cursor: pointer; transition: all .15s; }
+.chip-e { border-color: rgba(27,255,224,0.3); color: var(--e); background: var(--e3); }
+.chip-e:hover { background: var(--e2); }
+.chip-gray { border-color: var(--border2); color: var(--muted); background: transparent; }
+.chip-gray:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+.dot-live { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* CONTENT PADDING */
+.content { padding: 22px 28px 40px; }
+
+/* ════════════════════════════════
+   COMPONENTS
+════════════════════════════════ */
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+
+.card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r2); padding: 18px 20px;
+}
+.card-title { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+
+.metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 16px 18px; }
+.metric-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.metric-val { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 600; line-height: 1; margin-bottom: 6px; }
+.metric-delta { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+.delta-up { color: var(--green); }
+.delta-dn { color: var(--coral); }
+.delta-neu { color: var(--muted); }
+
+/* PATIENT LIST */
+.patient-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: var(--r);
+  cursor: pointer; transition: background .12s;
+  border: 1px solid transparent; margin-bottom: 3px;
+}
+.patient-row:hover { background: rgba(255,255,255,0.03); border-color: var(--border); }
+.patient-row.selected { background: var(--e3); border-color: rgba(27,255,224,0.2); }
+.p-av { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.p-name { font-size: 13px; font-weight: 500; margin-bottom: 1px; }
+.p-sub { font-size: 11px; color: var(--muted); }
+.p-status { margin-left: auto; }
+.badge { display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; }
+.badge-green { background: rgba(34,214,138,0.12); color: var(--green); border: 1px solid rgba(34,214,138,0.2); }
+.badge-amber { background: rgba(245,166,35,0.12); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+.badge-red { background: rgba(255,92,87,0.12); color: var(--coral); border: 1px solid rgba(255,92,87,0.2); }
+.badge-blue { background: rgba(58,123,255,0.12); color: var(--blue); border: 1px solid rgba(58,123,255,0.2); }
+
+/* GESTURE BARS */
+.g-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+.g-name { font-size: 11px; color: var(--muted); min-width: 100px; }
+.g-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+.g-bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.g-pct { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; min-width: 34px; text-align: right; }
+
+/* TIMELINE */
+.tl { position: relative; padding-left: 20px; }
+.tl::before { content: ''; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 1px; background: var(--border2); }
+.tl-item { position: relative; margin-bottom: 16px; }
+.tl-item::before { content: ''; position: absolute; left: -17px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--bg3); border: 1.5px solid var(--muted); }
+.tl-item.ok::before { background: var(--green); border-color: var(--green); }
+.tl-item.warn::before { background: var(--amber); border-color: var(--amber); }
+.tl-date { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 2px; }
+.tl-text { font-size: 12px; color: var(--white); line-height: 1.5; }
+
+/* ALERT */
+.alert { display: flex; gap: 10px; padding: 12px 14px; border-radius: var(--r); margin-bottom: 8px; border: 1px solid; }
+.alert-warn { background: rgba(245,166,35,0.07); border-color: rgba(245,166,35,0.2); }
+.alert-ok { background: rgba(34,214,138,0.06); border-color: rgba(34,214,138,0.18); }
+.alert-info { background: rgba(58,123,255,0.07); border-color: rgba(58,123,255,0.2); }
+.alert-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.alert-title { font-size: 12px; font-weight: 500; margin-bottom: 2px; }
+.alert-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* PARAM SLIDERS */
+.param-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.param-label { font-size: 12px; color: var(--muted); min-width: 120px; }
+.param-slider { flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); outline: none; }
+.param-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--e); cursor: pointer; border: 2px solid var(--bg2); }
+.param-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; color: var(--e); min-width: 24px; text-align: right; }
+.btn { padding: 9px 18px; border-radius: var(--r); border: 1px solid; cursor: pointer; font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: all .15s; }
+.btn-primary { background: var(--e2); border-color: rgba(27,255,224,0.35); color: var(--e); }
+.btn-primary:hover { background: rgba(27,255,224,0.2); }
+.btn-ghost { background: transparent; border-color: var(--border2); color: var(--muted); }
+.btn-ghost:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+
+/* USAGE BARS */
+.usage-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.usage-row:last-child { border-bottom: none; }
+.usage-day { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); min-width: 56px; }
+.usage-bar-bg { flex: 1; height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+.usage-bar { height: 100%; border-radius: 3px; background: rgba(27,255,224,0.55); }
+.usage-hrs { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); min-width: 30px; text-align: right; }
+
+/* NOTE */
+.note-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.note-av { width: 26px; height: 26px; border-radius: 50%; background: rgba(139,127,255,0.15); border: 1px solid rgba(139,127,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--purple); flex-shrink: 0; }
+.note-bubble { background: var(--bg3); border: 1px solid var(--border); border-radius: 0 var(--r) var(--r) var(--r); padding: 9px 12px; flex: 1; }
+.note-who { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+.note-text { font-size: 12px; line-height: 1.5; }
+textarea.note-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--r); padding: 9px 12px; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--white); resize: none; height: 56px; margin-top: 8px; outline: none; }
+textarea.note-input:focus { border-color: rgba(27,255,224,0.3); }
+
+/* ════════════════════════════════
+   PATIENT APP VIEW (MOBILE FRAME)
+════════════════════════════════ */
+.mobile-frame-wrap { display: flex; align-items: flex-start; justify-content: center; gap: 32px; padding: 28px; }
+.mobile-frame {
+  width: 320px; flex-shrink: 0;
+  background: var(--bg2);
+  border: 2px solid var(--border2);
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 0 0 6px var(--bg), 0 40px 80px rgba(0,0,0,0.6);
+}
+.phone-notch { background: var(--bg2); height: 40px; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--border); }
+.notch-pill { width: 80px; height: 20px; background: var(--bg); border-radius: 10px; }
+.phone-screen { height: 620px; overflow-y: auto; background: var(--bg); }
+.phone-screen::-webkit-scrollbar { display: none; }
+
+/* APP SCREENS */
+.app-screen { display: none; }
+.app-screen.active { display: block; }
+
+.app-header { padding: 18px 20px 14px; background: var(--bg); border-bottom: 1px solid var(--border); }
+.app-greeting { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2px; }
+.app-sub { font-size: 12px; color: var(--muted); }
+
+.app-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin: 12px; }
+.app-card-title { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+
+.emg-ring { position: relative; width: 130px; height: 130px; margin: 0 auto 14px; }
+.emg-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.emg-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.emg-pct { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 600; color: var(--e); line-height: 1; }
+.emg-label { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+.exercise-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all .15s; }
+.exercise-card:hover { border-color: rgba(27,255,224,0.25); background: var(--bg4); }
+.ex-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.ex-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.ex-desc { font-size: 11px; color: var(--muted); }
+.ex-badge { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+
+.prog-bar-wrap { margin: 8px 0; }
+.prog-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.prog-bg { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 3px; background: var(--e); }
+
+.bottom-nav { display: flex; background: var(--bg2); border-top: 1px solid var(--border); padding: 10px 0 14px; }
+.bn-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 0; }
+.bn-ico { font-size: 18px; opacity: .5; transition: opacity .15s; }
+.bn-lbl { font-size: 9px; color: var(--muted); transition: color .15s; }
+.bn-item.active .bn-ico { opacity: 1; }
+.bn-item.active .bn-lbl { color: var(--e); }
+
+.app-section { padding: 14px 16px 4px; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+/* MOBILE INFO PANEL */
+.mobile-info { flex: 1; max-width: 340px; }
+.info-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+.info-desc { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+.feature-list { display: flex; flex-direction: column; gap: 10px; }
+.feature-item { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); }
+.f-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.f-title { font-size: 12px; font-weight: 500; margin-bottom: 2px; }
+.f-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.screen-tabs { display: flex; gap: 6px; margin-top: 20px; flex-wrap: wrap; }
+.screen-tab { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; padding: 6px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--border2); color: var(--muted); transition: all .15s; }
+.screen-tab.active { background: var(--e2); border-color: rgba(27,255,224,0.3); color: var(--e); }
+
+/* ════════════════════════════════
+   CANVAS CHARTS
+════════════════════════════════ */
+.chart-wrap { position: relative; height: 200px; width: 100%; }
+.chart-wrap canvas { position: absolute; inset: 0; }
+
+/* ════════════════════════════════
+   SCROLLBAR
+════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ════ SIDEBAR ════ -->
+  <nav class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#060810" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 2L4 8v8l8 6 8-6V8z"/>
+          <path d="M12 8v8M8 10l4-2 4 2"/>
+        </svg>
+      </div>
+      <div class="logo-text">LUMA<span>JIRA</span></div>
+    </div>
+
+    <div class="nav">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" onclick="showView('dashboard')">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="showView('pacientes')">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.8 2.2-5 5-5s5 2.2 5 5"/><circle cx="12" cy="5" r="2"/><path d="M15 13c0-2.2-1.3-4-3-4.5"/></svg>
+        Pacientes
+        <span class="nav-badge">12</span>
+      </div>
+      <div class="nav-item" onclick="showView('carlos')">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1L2 4v4c0 3.3 2.5 6.4 6 7.2C11.5 14.4 14 11.3 14 8V4z"/><path d="M5.5 8l2 2 3-3"/></svg>
+        Carlos Mamani
+        <span class="nav-badge" style="background:var(--amber);color:var(--bg);">!</span>
+      </div>
+
+      <div class="nav-section" style="margin-top:10px;">Clínica</div>
+      <div class="nav-item" onclick="showView('kits')">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="6" width="14" height="9" rx="1.5"/><path d="M5 6V4a3 3 0 016 0v2"/><circle cx="8" cy="10.5" r="1.5"/></svg>
+        Kits activos
+      </div>
+      <div class="nav-item" onclick="showView('app_paciente')">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="1" width="8" height="14" rx="2"/><path d="M7 12h2"/></svg>
+        App del paciente
+      </div>
+
+      <div class="nav-section" style="margin-top:10px;">Sistema</div>
+      <div class="nav-item">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4"/></svg>
+        Configuración
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-av">DR</div>
+      <div>
+        <div class="user-name">Dr. Ríos</div>
+        <div class="user-role">Protesista · Lima</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ════ MAIN ════ -->
+  <main class="main">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="view active" id="view-dashboard">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Dashboard</div>
+        </div>
+        <div class="topbar-right">
+          <div class="chip chip-e"><div class="dot-live"></div>12 pacientes activos</div>
+          <div class="chip chip-gray">Ene 13, 2026</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="grid-4">
+          <div class="metric-card">
+            <div class="metric-label">Pacientes activos</div>
+            <div class="metric-val" style="color:var(--e);">12</div>
+            <div class="metric-delta delta-up">↑ +3 este mes</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Precisión promedio</div>
+            <div class="metric-val" style="color:var(--green);">87%</div>
+            <div class="metric-delta delta-up">↑ +4% vs mes ant.</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Uso promedio diario</div>
+            <div class="metric-val">5.8h</div>
+            <div class="metric-delta delta-neu">→ estable</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Ingreso mensual</div>
+            <div class="metric-val" style="color:var(--amber);">$2,180</div>
+            <div class="metric-delta delta-up">↑ +$340 vs oct.</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Estado de la flota</div>
+            <div class="patient-row selected" onclick="showView('carlos')">
+              <div class="p-av" style="background:rgba(27,255,224,0.12);color:var(--e);">CM</div>
+              <div><div class="p-name">Carlos Mamani</div><div class="p-sub">Sem. 5 · pinza 91%</div></div>
+              <div class="p-status"><span class="badge badge-amber">Alerta</span></div>
+            </div>
+            <div class="patient-row">
+              <div class="p-av" style="background:rgba(34,214,138,0.12);color:var(--green);">MR</div>
+              <div><div class="p-name">María Ríos</div><div class="p-sub">Sem. 12 · agarre 94%</div></div>
+              <div class="p-status"><span class="badge badge-green">Óptimo</span></div>
+            </div>
+            <div class="patient-row">
+              <div class="p-av" style="background:rgba(58,123,255,0.12);color:var(--blue);">JP</div>
+              <div><div class="p-name">Jorge Palomino</div><div class="p-sub">Sem. 2 · calibrando</div></div>
+              <div class="p-status"><span class="badge badge-blue">Inicio</span></div>
+            </div>
+            <div class="patient-row">
+              <div class="p-av" style="background:rgba(245,166,35,0.12);color:var(--amber);">AL</div>
+              <div><div class="p-name">Ana Llanos</div><div class="p-sub">Sem. 8 · rotar 62%</div></div>
+              <div class="p-status"><span class="badge badge-amber">Revisar</span></div>
+            </div>
+            <div class="patient-row">
+              <div class="p-av" style="background:rgba(139,127,255,0.12);color:var(--purple);">RC</div>
+              <div><div class="p-name">Roberto Cruz</div><div class="p-sub">Sem. 20 · alta próx.</div></div>
+              <div class="p-status"><span class="badge badge-green">Óptimo</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Actividad hoy</div>
+            <div class="alert alert-warn">
+              <div class="alert-icon">⚠</div>
+              <div><div class="alert-title" style="color:var(--amber);">Carlos — giro de muñeca 42%</div><div class="alert-desc">Requiere ajuste de sensibilidad en canal 2.</div></div>
+            </div>
+            <div class="alert alert-ok">
+              <div class="alert-icon">✓</div>
+              <div><div class="alert-title" style="color:var(--green);">OTA aplicado a 8 kits — v2.3.1</div><div class="alert-desc">Nuevo modelo de clasificación muscular.</div></div>
+            </div>
+            <div class="alert alert-info">
+              <div class="alert-icon">→</div>
+              <div><div class="alert-title" style="color:var(--blue);">Jorge Palomino — primera semana</div><div class="alert-desc">Calibración inicial completada al 78%.</div></div>
+            </div>
+            <div class="alert alert-ok">
+              <div class="alert-icon">✓</div>
+              <div><div class="alert-title" style="color:var(--green);">María Ríos — meta semanal alcanzada</div><div class="alert-desc">6.2h de uso promedio, 5 días consecutivos.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Precisión de la flota — últimas 4 semanas</div>
+          <div class="chart-wrap">
+            <canvas id="fleetChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PACIENTES ══ -->
+    <div class="view" id="view-pacientes">
+      <div class="topbar">
+        <div class="page-title">Pacientes</div>
+        <div class="topbar-right">
+          <div class="chip chip-primary" style="background:var(--e2);border-color:rgba(27,255,224,0.3);color:var(--e);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;padding:5px 11px;border-radius:20px;border:1px solid;">+ Nuevo paciente</div>
+        </div>
+      </div>
+      <div class="content">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="patient-row" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);" onclick="showView('carlos')">
+            <div class="p-av" style="background:rgba(27,255,224,0.12);color:var(--e);">CM</div>
+            <div style="flex:1;"><div class="p-name">Carlos Mamani</div><div class="p-sub">34a · Carpintero · Sem. 5/8</div>
+              <div style="margin-top:6px;">
+                <div class="g-row"><div class="g-bar-bg" style="height:4px;"><div class="g-bar" style="width:91%;background:var(--e);"></div></div><span class="g-pct" style="font-size:10px;color:var(--e);">91%</span></div>
+              </div>
+            </div>
+            <div class="p-status"><span class="badge badge-amber">Alerta</span></div>
+          </div>
+          <div class="patient-row" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);">
+            <div class="p-av" style="background:rgba(34,214,138,0.12);color:var(--green);">MR</div>
+            <div style="flex:1;"><div class="p-name">María Ríos</div><div class="p-sub">28a · Costurera · Sem. 12/8</div>
+              <div style="margin-top:6px;"><div class="g-row"><div class="g-bar-bg" style="height:4px;"><div class="g-bar" style="width:94%;background:var(--green);"></div></div><span class="g-pct" style="font-size:10px;color:var(--green);">94%</span></div></div>
+            </div>
+            <div class="p-status"><span class="badge badge-green">Óptimo</span></div>
+          </div>
+          <div class="patient-row" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);">
+            <div class="p-av" style="background:rgba(58,123,255,0.12);color:var(--blue);">JP</div>
+            <div style="flex:1;"><div class="p-name">Jorge Palomino</div><div class="p-sub">45a · Mecánico · Sem. 2/8</div>
+              <div style="margin-top:6px;"><div class="g-row"><div class="g-bar-bg" style="height:4px;"><div class="g-bar" style="width:62%;background:var(--blue);"></div></div><span class="g-pct" style="font-size:10px;color:var(--blue);">62%</span></div></div>
+            </div>
+            <div class="p-status"><span class="badge badge-blue">Inicio</span></div>
+          </div>
+          <div class="patient-row" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);">
+            <div class="p-av" style="background:rgba(245,166,35,0.12);color:var(--amber);">AL</div>
+            <div style="flex:1;"><div class="p-name">Ana Llanos</div><div class="p-sub">31a · Agricultora · Sem. 8/8</div>
+              <div style="margin-top:6px;"><div class="g-row"><div class="g-bar-bg" style="height:4px;"><div class="g-bar" style="width:76%;background:var(--amber);"></div></div><span class="g-pct" style="font-size:10px;color:var(--amber);">76%</span></div></div>
+            </div>
+            <div class="p-status"><span class="badge badge-amber">Revisar</span></div>
+          </div>
+          <div class="patient-row" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);">
+            <div class="p-av" style="background:rgba(139,127,255,0.12);color:var(--purple);">RC</div>
+            <div style="flex:1;"><div class="p-name">Roberto Cruz</div><div class="p-sub">52a · Albañil · Sem. 20/8</div>
+              <div style="margin-top:6px;"><div class="g-row"><div class="g-bar-bg" style="height:4px;"><div class="g-bar" style="width:97%;background:var(--green);"></div></div><span class="g-pct" style="font-size:10px;color:var(--green);">97%</span></div></div>
+            </div>
+            <div class="p-status"><span class="badge badge-green">Óptimo</span></div>
+          </div>
+          <div class="patient-row" style="background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r2);justify-content:center;cursor:pointer;" onclick="">
+            <div style="color:var(--muted);font-size:12px;text-align:center;padding:10px;">+ Agregar paciente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CARLOS EXPEDIENTE ══ -->
+    <div class="view" id="view-carlos">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="p-av" style="background:rgba(27,255,224,0.12);color:var(--e);width:36px;height:36px;font-size:13px;">CM</div>
+          <div>
+            <div class="page-title">Carlos Mamani</div>
+            <div style="font-size:11px;color:var(--muted);">34a · Carpintero · Lima · Semana 5 de 8 · Kit #LJ-0042</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="chip chip-e"><div class="dot-live"></div>Usando kit ahora</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="grid-4">
+          <div class="metric-card"><div class="metric-label">Uso hoy</div><div class="metric-val" style="color:var(--e);">6.2h</div><div class="metric-delta delta-up">↑ meta 6h ✓</div></div>
+          <div class="metric-card"><div class="metric-label">Precisión</div><div class="metric-val" style="color:var(--green);">91%</div><div class="metric-delta delta-up">↑ +6% sem. ant.</div></div>
+          <div class="metric-card"><div class="metric-label">Latencia</div><div class="metric-val">98ms</div><div class="metric-delta delta-up">↑ &lt;150ms ✓</div></div>
+          <div class="metric-card"><div class="metric-label">Batería</div><div class="metric-val" style="color:var(--amber);">74%</div><div class="metric-delta delta-neu">~2.8h restantes</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Precisión por gesto</div>
+            <div style="margin-bottom:4px;">
+              <div class="g-row"><span class="g-name">Pinza fina</span><div class="g-bar-bg"><div class="g-bar" style="width:91%;background:var(--e);"></div></div><span class="g-pct" style="color:var(--e);">91%</span></div>
+              <div class="g-row"><span class="g-name">Agarre cilíndrico</span><div class="g-bar-bg"><div class="g-bar" style="width:87%;background:var(--e);"></div></div><span class="g-pct" style="color:var(--e);">87%</span></div>
+              <div class="g-row"><span class="g-name">Extensión total</span><div class="g-bar-bg"><div class="g-bar" style="width:79%;background:var(--blue);"></div></div><span class="g-pct" style="color:var(--blue);">79%</span></div>
+              <div class="g-row"><span class="g-name">Giro muñeca</span><div class="g-bar-bg"><div class="g-bar" style="width:42%;background:var(--amber);"></div></div><span class="g-pct" style="color:var(--amber);">42%</span></div>
+            </div>
+            <div style="margin-top:14px;">
+              <div class="card-title">Alertas</div>
+              <div class="alert alert-warn"><div class="alert-icon">⚠</div><div><div class="alert-title" style="color:var(--amber);">Giro de muñeca bajo (42%)</div><div class="alert-desc">Aumentar sensibilidad canal 2 a 8.</div></div></div>
+              <div class="alert alert-ok"><div class="alert-icon">✓</div><div><div class="alert-title" style="color:var(--green);">Uso diario en meta — 3 días consecutivos</div></div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Uso diario — últimos 7 días</div>
+            <div class="usage-row"><span class="usage-day">Lun 06</span><div class="usage-bar-bg"><div class="usage-bar" style="width:61%;"></div></div><span class="usage-hrs">4.9h</span></div>
+            <div class="usage-row"><span class="usage-day">Mar 07</span><div class="usage-bar-bg"><div class="usage-bar" style="width:70%;"></div></div><span class="usage-hrs">5.6h</span></div>
+            <div class="usage-row"><span class="usage-day">Mié 08</span><div class="usage-bar-bg"><div class="usage-bar" style="width:55%;"></div></div><span class="usage-hrs">4.4h</span></div>
+            <div class="usage-row"><span class="usage-day">Jue 09</span><div class="usage-bar-bg"><div class="usage-bar" style="width:75%;"></div></div><span class="usage-hrs">6.0h</span></div>
+            <div class="usage-row"><span class="usage-day">Vie 10</span><div class="usage-bar-bg"><div class="usage-bar" style="width:78%;"></div></div><span class="usage-hrs">6.2h</span></div>
+            <div class="usage-row"><span class="usage-day">Sáb 11</span><div class="usage-bar-bg"><div class="usage-bar" style="width:40%;"></div></div><span class="usage-hrs">3.2h</span></div>
+            <div class="usage-row"><span class="usage-day">Dom 12</span><div class="usage-bar-bg"><div class="usage-bar" style="width:20%;"></div></div><span class="usage-hrs">1.6h</span></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Ajuste remoto de parámetros</div>
+            <div class="param-row"><span class="param-label">Sensibilidad EMG</span><input type="range" class="param-slider" min="1" max="10" value="7" oninput="this.nextElementSibling.textContent=this.value"><span class="param-val">7</span></div>
+            <div class="param-row"><span class="param-label">Umbral activación</span><input type="range" class="param-slider" min="1" max="10" value="4" oninput="this.nextElementSibling.textContent=this.value"><span class="param-val">4</span></div>
+            <div class="param-row"><span class="param-label">Velocidad motor</span><input type="range" class="param-slider" min="1" max="10" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="param-val">6</span></div>
+            <div class="param-row"><span class="param-label">Canal 2 — rotación</span><input type="range" class="param-slider" min="1" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value"><span class="param-val">5</span></div>
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <button class="btn btn-primary" style="flex:1;">Aplicar via OTA</button>
+              <button class="btn btn-ghost">Deshacer</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Notas clínicas</div>
+            <div class="note-row">
+              <div class="note-av">DR</div>
+              <div class="note-bubble"><div class="note-who">Dr. Ríos · Lun 06 ene, 09:14</div><div class="note-text">Carlos reporta carpintería básica sin problema. Dificultad con rotación fina. Aumentar ejercicios canal 2.</div></div>
+            </div>
+            <div class="note-row">
+              <div class="note-av">DR</div>
+              <div class="note-bubble"><div class="note-who">Dr. Ríos · Vie 10 ene, 11:42</div><div class="note-text">Pinza subió de 84% a 91%. Excelente adherencia. Ajustar sensibilidad canal 2 a 8 esta semana.</div></div>
+            </div>
+            <textarea class="note-input" placeholder="Agregar nota clínica..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ KITS ══ -->
+    <div class="view" id="view-kits">
+      <div class="topbar"><div class="page-title">Kits activos</div><div class="topbar-right"><div class="chip chip-e">12 kits en campo</div></div></div>
+      <div class="content">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+          <div class="card" style="border-color:rgba(27,255,224,0.2);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+              <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--e);font-weight:600;">LJ-0042</div><div style="font-size:12px;color:var(--muted);margin-top:1px;">Carlos Mamani</div></div>
+              <span class="badge badge-amber">Alerta</span>
+            </div>
+            <div class="g-row"><span class="g-name" style="font-size:10px;">Precisión</span><div class="g-bar-bg"><div class="g-bar" style="width:91%;background:var(--e);"></div></div><span class="g-pct" style="color:var(--e);">91%</span></div>
+            <div class="g-row"><span class="g-name" style="font-size:10px;">Batería</span><div class="g-bar-bg"><div class="g-bar" style="width:74%;background:var(--amber);"></div></div><span class="g-pct" style="color:var(--amber);">74%</span></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:8px;font-family:'JetBrains Mono',monospace;">Firmware v2.3.1 · Último sync: hace 4min</div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+              <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);font-weight:600;">LJ-0035</div><div style="font-size:12px;color:var(--muted);margin-top:1px;">María Ríos</div></div>
+              <span class="badge badge-green">Óptimo</span>
+            </div>
+            <div class="g-row"><span class="g-name" style="font-size:10px;">Precisión</span><div class="g-bar-bg"><div class="g-bar" style="width:94%;background:var(--green);"></div></div><span class="g-pct" style="color:var(--green);">94%</span></div>
+            <div class="g-row"><span class="g-name" style="font-size:10px;">Batería</span><div class="g-bar-bg"><div class="g-bar" style="width:88%;background:var(--green);"></div></div><span class="g-pct" style="color:var(--green);">88%</span></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:8px;font-family:'JetBrains Mono',monospace;">Firmware v2.3.1 · Último sync: hace 1min</div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+              <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);font-weight:600;">LJ-0048</div><div style="font-size:12px;color:var(--muted);margin-top:1px;">Jorge Palomino</div></div>
+              <span class="badge badge-blue">Inicio</span>
+            </div>
+            <div class="g-row"><span class="g-name" style="font-size:10px;">Precisión</span><div class="g-bar-bg"><div class="g-bar" style="width:62%;background:var(--blue);"></div></div><span class="g-pct" style="color:var(--blue);">62%</span></div>
+            <div class="g-row"><span class="g-name" style="font-size:10px;">Batería</span><div class="g-bar-bg"><div class="g-bar" style="width:91%;background:var(--green);"></div></div><span class="g-pct" style="color:var(--green);">91%</span></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:8px;font-family:'JetBrains Mono',monospace;">Firmware v2.3.1 · Último sync: hace 8min</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ APP PACIENTE ══ -->
+    <div class="view" id="view-app_paciente">
+      <div class="topbar">
+        <div class="page-title">App del paciente</div>
+        <div class="topbar-right"><div class="chip chip-gray">Versión 2.3.1</div></div>
+      </div>
+      <div class="mobile-frame-wrap">
+        <div class="mobile-frame">
+          <div class="phone-notch"><div class="notch-pill"></div></div>
+          <div class="phone-screen" id="phoneScreen">
+
+            <!-- HOME SCREEN -->
+            <div class="app-screen active" id="ps-home">
+              <div class="app-header">
+                <div class="app-greeting">Hola, Carlos</div>
+                <div class="app-sub">Semana 5 de rehabilitación · Lima</div>
+              </div>
+
+              <div style="padding:12px 12px 0;">
+                <div class="app-card" style="text-align:center;padding:20px 16px;">
+                  <div class="app-card-title">Señal muscular activa</div>
+                  <div class="emg-ring">
+                    <svg viewBox="0 0 130 130">
+                      <circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
+                      <circle id="emgCircle" cx="65" cy="65" r="54" fill="none" stroke="#1BFFE0" stroke-width="10" stroke-dasharray="339.3" stroke-dashoffset="30.5" stroke-linecap="round"/>
+                    </svg>
+                    <div class="emg-center">
+                      <div class="emg-pct">91%</div>
+                      <div class="emg-label">precisión</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;justify-content:center;gap:16px;font-size:11px;color:var(--muted);">
+                    <span><span style="color:var(--e);font-weight:500;">6.2h</span> uso hoy</span>
+                    <span><span style="color:var(--green);font-weight:500;">74%</span> batería</span>
+                    <span><span style="color:var(--white);font-weight:500;">98ms</span> latencia</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="app-section">Ejercicios de hoy</div>
+              <div style="padding:0 12px;">
+                <div class="exercise-card" onclick="switchPhoneScreen('ps-ejercicio')">
+                  <div class="ex-icon" style="background:rgba(27,255,224,0.1);">✊</div>
+                  <div><div class="ex-name">Pinza fina — serie 3</div><div class="ex-desc">3 × 12 repeticiones · 2 min</div></div>
+                  <div class="ex-badge"><span class="badge badge-green">Listo</span></div>
+                </div>
+                <div class="exercise-card" onclick="switchPhoneScreen('ps-ejercicio')">
+                  <div class="ex-icon" style="background:rgba(58,123,255,0.1);">🤚</div>
+                  <div><div class="ex-name">Extensión completa</div><div class="ex-desc">2 × 10 repeticiones · 3 min</div></div>
+                  <div class="ex-badge"><span class="badge badge-amber">Pendiente</span></div>
+                </div>
+                <div class="exercise-card" onclick="switchPhoneScreen('ps-ejercicio')">
+                  <div class="ex-icon" style="background:rgba(245,166,35,0.1);">🔄</div>
+                  <div><div class="ex-name">Giro de muñeca</div><div class="ex-desc">4 × 8 repeticiones · 4 min</div></div>
+                  <div class="ex-badge"><span class="badge badge-red">Urgente</span></div>
+                </div>
+              </div>
+
+              <div class="app-section">Mi progreso</div>
+              <div style="padding:0 12px 80px;">
+                <div class="app-card">
+                  <div class="prog-bar-wrap"><div class="prog-label"><span>Semana 5 de 8</span><span style="color:var(--e);">62%</span></div><div class="prog-bg"><div class="prog-fill" style="width:62%;"></div></div></div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:6px;">A este ritmo: <span style="color:var(--green);">listo para alta en 3 semanas</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- EJERCICIO SCREEN -->
+            <div class="app-screen" id="ps-ejercicio">
+              <div style="padding:16px 16px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+                <div onclick="switchPhoneScreen('ps-home')" style="cursor:pointer;color:var(--e);font-size:18px;">←</div>
+                <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;">Giro de muñeca</div>
+              </div>
+              <div style="padding:16px;">
+                <div class="app-card" style="text-align:center;background:rgba(245,166,35,0.05);border-color:rgba(245,166,35,0.2);">
+                  <div style="font-size:40px;margin-bottom:8px;">🔄</div>
+                  <div style="font-size:13px;color:var(--muted);">Intenta rotar suavemente</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:600;color:var(--amber);margin:12px 0;" id="countdownNum">8</div>
+                  <div style="font-size:11px;color:var(--muted);">repeticiones restantes</div>
+                  <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="startExercise()">Iniciar serie</button>
+                </div>
+                <div class="app-card" style="margin-top:10px;">
+                  <div class="app-card-title">Señal EMG en vivo</div>
+                  <canvas id="liveEmg" width="280" height="60" style="width:100%;"></canvas>
+                </div>
+                <div class="app-card" style="margin-top:10px;">
+                  <div class="app-card-title">Instrucciones</div>
+                  <div style="font-size:12px;color:var(--muted);line-height:1.7;">
+                    1. Relaja el brazo completamente<br>
+                    2. Intenta girar la muñeca despacio<br>
+                    3. Mantén 2 segundos en cada posición<br>
+                    4. El kit detectará el movimiento solo
+                  </div>
+                </div>
+              </div>
+              <div style="height:20px;"></div>
+            </div>
+
+            <!-- PROGRESO SCREEN -->
+            <div class="app-screen" id="ps-progreso">
+              <div class="app-header">
+                <div class="app-greeting">Mi progreso</div>
+                <div class="app-sub">Semana 5 · Kit LJ-0042</div>
+              </div>
+              <div style="padding:12px;">
+                <div class="app-card">
+                  <div class="app-card-title">Gestos dominados</div>
+                  <div class="g-row"><span class="g-name" style="font-size:11px;">Pinza fina</span><div class="g-bar-bg"><div class="g-bar" style="width:91%;background:var(--e);"></div></div><span class="g-pct" style="color:var(--e);font-size:10px;">91%</span></div>
+                  <div class="g-row"><span class="g-name" style="font-size:11px;">Agarre</span><div class="g-bar-bg"><div class="g-bar" style="width:87%;background:var(--e);"></div></div><span class="g-pct" style="color:var(--e);font-size:10px;">87%</span></div>
+                  <div class="g-row"><span class="g-name" style="font-size:11px;">Extensión</span><div class="g-bar-bg"><div class="g-bar" style="width:79%;background:var(--blue);"></div></div><span class="g-pct" style="color:var(--blue);font-size:10px;">79%</span></div>
+                  <div class="g-row" style="margin-bottom:0;"><span class="g-name" style="font-size:11px;">Giro muñeca</span><div class="g-bar-bg"><div class="g-bar" style="width:42%;background:var(--amber);"></div></div><span class="g-pct" style="color:var(--amber);font-size:10px;">42%</span></div>
+                </div>
+                <div class="app-card" style="margin-top:10px;">
+                  <div class="app-card-title">Uso diario esta semana</div>
+                  <div class="usage-row"><span class="usage-day">Lun</span><div class="usage-bar-bg"><div class="usage-bar" style="width:61%;"></div></div><span class="usage-hrs">4.9h</span></div>
+                  <div class="usage-row"><span class="usage-day">Mar</span><div class="usage-bar-bg"><div class="usage-bar" style="width:70%;"></div></div><span class="usage-hrs">5.6h</span></div>
+                  <div class="usage-row"><span class="usage-day">Mié</span><div class="usage-bar-bg"><div class="usage-bar" style="width:55%;"></div></div><span class="usage-hrs">4.4h</span></div>
+                  <div class="usage-row"><span class="usage-day">Jue</span><div class="usage-bar-bg"><div class="usage-bar" style="width:75%;"></div></div><span class="usage-hrs">6.0h</span></div>
+                  <div class="usage-row"><span class="usage-day">Vie</span><div class="usage-bar-bg"><div class="usage-bar" style="width:78%;"></div></div><span class="usage-hrs">6.2h</span></div>
+                </div>
+              </div>
+              <div style="height:80px;"></div>
+            </div>
+
+            <!-- CHAT SCREEN -->
+            <div class="app-screen" id="ps-chat">
+              <div style="padding:16px 16px 12px;border-bottom:1px solid var(--border);">
+                <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;">Dr. Ríos</div>
+                <div style="font-size:11px;color:var(--green);display:flex;align-items:center;gap:4px;"><div class="dot-live"></div>Disponible ahora</div>
+              </div>
+              <div style="padding:12px;display:flex;flex-direction:column;gap:8px;min-height:440px;">
+                <div style="align-self:flex-start;max-width:220px;">
+                  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px 12px 12px 12px;padding:9px 12px;font-size:12px;line-height:1.5;">Hola Carlos, vi tus datos de hoy. El giro de muñeca está mejorando. ¿Hiciste los ejercicios del canal 2?</div>
+                  <div style="font-size:9px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">Dr. Ríos · 10:14</div>
+                </div>
+                <div style="align-self:flex-end;max-width:220px;">
+                  <div style="background:var(--e2);border:1px solid rgba(27,255,224,0.2);border-radius:12px 4px 12px 12px;padding:9px 12px;font-size:12px;line-height:1.5;color:var(--e);">Sí doctor, 3 series esta mañana. Se siente más natural que la semana pasada.</div>
+                  <div style="font-size:9px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;text-align:right;">Carlos · 10:22</div>
+                </div>
+                <div style="align-self:flex-start;max-width:220px;">
+                  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px 12px 12px 12px;padding:9px 12px;font-size:12px;line-height:1.5;">Perfecto. Ajusté la sensibilidad del canal 2. Tu kit se actualizó hace 10 minutos. Prueba el giro mañana.</div>
+                  <div style="font-size:9px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">Dr. Ríos · 11:05</div>
+                </div>
+              </div>
+              <div style="padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;">
+                <input type="text" placeholder="Escribe un mensaje..." style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:8px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--white);outline:none;">
+                <div style="width:34px;height:34px;border-radius:50%;background:var(--e);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7L2 2l2 5-2 5z" fill="#060810"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- BOTTOM NAV (always visible) -->
+            <div style="position:sticky;bottom:0;background:var(--bg2);border-top:1px solid var(--border);">
+              <div class="bottom-nav">
+                <div class="bn-item active" id="bn-home" onclick="switchPhoneScreen('ps-home');setActiveNav('bn-home')">
+                  <div class="bn-ico">⊞</div><div class="bn-lbl">Inicio</div>
+                </div>
+                <div class="bn-item" id="bn-prog" onclick="switchPhoneScreen('ps-progreso');setActiveNav('bn-prog')">
+                  <div class="bn-ico">📈</div><div class="bn-lbl">Progreso</div>
+                </div>
+                <div class="bn-item" id="bn-chat" onclick="switchPhoneScreen('ps-chat');setActiveNav('bn-chat')">
+                  <div class="bn-ico">💬</div><div class="bn-lbl">Dr. Ríos</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="mobile-info">
+          <div class="info-title">App del paciente</div>
+          <div class="info-desc">Lo que Carlos usa desde su celular todos los días — sin necesitar ir a la clínica. Navega las pantallas del teléfono para explorar.</div>
+          <div class="feature-list">
+            <div class="feature-item"><div class="f-icon" style="background:rgba(27,255,224,0.1);">📡</div><div><div class="f-title">Señal EMG en tiempo real</div><div class="f-desc">Ve qué tan bien está captando su músculo mientras usa la prótesis.</div></div></div>
+            <div class="feature-item"><div class="f-icon" style="background:rgba(58,123,255,0.1);">🏋️</div><div><div class="f-title">Ejercicios guiados</div><div class="f-desc">Sesiones de 15–20 min con instrucciones paso a paso. El kit registra cada repetición.</div></div></div>
+            <div class="feature-item"><div class="f-icon" style="background:rgba(34,214,138,0.1);">📊</div><div><div class="f-title">Progreso y uso diario</div><div class="f-desc">Gráficas simples de cuánto usó la prótesis y qué gestos va dominando.</div></div></div>
+            <div class="feature-item"><div class="f-icon" style="background:rgba(139,127,255,0.1);">💬</div><div><div class="f-title">Chat directo con el protesista</div><div class="f-desc">Consultas rápidas sin turno. El Dr. Ríos ve sus datos en tiempo real mientras hablan.</div></div></div>
+          </div>
+          <div class="screen-tabs">
+            <div class="screen-tab active" onclick="switchPhoneScreen('ps-home');setAllTabs(this)">Inicio</div>
+            <div class="screen-tab" onclick="switchPhoneScreen('ps-ejercicio');setAllTabs(this)">Ejercicio</div>
+            <div class="screen-tab" onclick="switchPhoneScreen('ps-progreso');setAllTabs(this)">Progreso</div>
+            <div class="screen-tab" onclick="switchPhoneScreen('ps-chat');setAllTabs(this)">Chat médico</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ─── NAVIGATION ─── */
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(id)) n.classList.add('active');
+  });
+  if (id === 'dashboard') initFleetChart();
+}
+
+/* ─── PHONE SCREENS ─── */
+function switchPhoneScreen(id) {
+  document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function setActiveNav(id) {
+  document.querySelectorAll('.bn-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function setAllTabs(el) {
+  document.querySelectorAll('.screen-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ─── EMG ANIMATION ─── */
+let emgOffset = 0;
+const emgPts = [];
+for (let i = 0; i < 60; i++) {
+  emgPts.push(Math.sin(i * 0.3) * 18 + Math.sin(i * 0.7) * 8 + (Math.random()-0.5)*5);
+}
+function drawLiveEmg() {
+  const c = document.getElementById('liveEmg');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  c.width = c.parentElement.offsetWidth || 280;
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.strokeStyle = '#1BFFE0';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  const pts = emgPts.length;
+  for (let i = 0; i < pts; i++) {
+    const x = (i/pts)*c.width;
+    const idx = (i + emgOffset) % pts;
+    const y = c.height/2 - emgPts[idx]*(c.height/60);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  emgOffset = (emgOffset+1) % pts;
+}
+setInterval(drawLiveEmg, 50);
+
+/* ─── FLEET CHART ─── */
+let fleetChart = null;
+function initFleetChart() {
+  const el = document.getElementById('fleetChart');
+  if (!el || fleetChart) return;
+  fleetChart = new Chart(el, {
+    type: 'line',
+    data: {
+      labels: ['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5'],
+      datasets: [
+        { label: 'Carlos', data: [65,72,80,85,91], borderColor:'#1BFFE0', backgroundColor:'rgba(27,255,224,0.05)', tension:.4, pointRadius:3, borderWidth:2 },
+        { label: 'María', data: [70,78,85,90,94], borderColor:'#22D68A', backgroundColor:'rgba(34,214,138,0.05)', tension:.4, pointRadius:3, borderWidth:2 },
+        { label: 'Jorge', data: [null,null,null,55,62], borderColor:'#3A7BFF', backgroundColor:'rgba(58,123,255,0.05)', tension:.4, pointRadius:3, borderWidth:2 },
+        { label: 'Promedio', data: [68,72,79,83,87], borderColor:'rgba(255,255,255,0.2)', backgroundColor:'transparent', tension:.4, pointRadius:0, borderWidth:1, borderDash:[4,4] }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: v => ' ' + v.dataset.label + ': ' + v.raw + '%' } }
+      },
+      scales: {
+        x: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { color:'#6B7A9A', font:{size:10} } },
+        y: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { color:'#6B7A9A', font:{size:10}, callback: v => v+'%' }, min:50, max:100 }
+      }
+    }
+  });
+}
+
+/* ─── EXERCISE COUNTDOWN ─── */
+function startExercise() {
+  let n = 8;
+  const el = document.getElementById('countdownNum');
+  const iv = setInterval(() => {
+    n--;
+    if (el) el.textContent = n;
+    if (n <= 0) { clearInterval(iv); if (el) el.textContent = '✓'; }
+  }, 800);
+}
+
+/* ─── EMG RING ANIMATION ─── */
+let ringDir = 1, ringVal = 91;
+setInterval(() => {
+  ringVal += (Math.random()-0.48) * 2;
+  ringVal = Math.max(82, Math.min(97, ringVal));
+  const circle = document.getElementById('emgCircle');
+  if (circle) {
+    const circumference = 2 * Math.PI * 54;
+    const offset = circumference * (1 - ringVal/100);
+    circle.setAttribute('stroke-dashoffset', offset.toFixed(1));
+  }
+}, 300);
+
+initFleetChart();
+</script>
+</body>
+</html>
