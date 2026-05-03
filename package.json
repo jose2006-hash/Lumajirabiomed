@@ -1,0 +1,14 @@
+{
+  "name": "lumajira-frontend",
+  "version": "1.0.0",
+  "description": "Frontend de Lumajira - Plataforma Biónica",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 3000",
+    "build": "echo 'No build step required'",
+    "start": "python -m http.server 3000"
+  },
+  "keywords": ["biomedical", "prosthetics", "dashboard"],
+  "author": "Lumajira Team",
+  "license": "MIT"
+}
