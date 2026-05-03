@@ -3,8 +3,8 @@
   "builds": [
     { "src": "index.html", "use": "@vercel/static" }
   ],
-  "routes": [
-    { "src": "/favicon.ico", "dest": "/favicon.svg" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/favicon.ico", "destination": "/favicon.svg" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

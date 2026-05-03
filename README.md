@@ -59,3 +59,17 @@ docker run -d -p 6379:6379 redis:alpine
 # Abrir frontend/dashboard/index.html en navegador
 # O servir: python -m http.server 3000
 ```
+
+## Despliegue
+
+- El frontend estático se puede desplegar con Vercel usando `vercel.json` en la raíz.
+- `vercel.json` ya está configurado para servir `index.html` y reescribir todas las rutas hacia la SPA.
+- El uso de Firebase en este proyecto es para datos/almacenamiento; la app estática no incluye aún la inicialización del SDK de Firebase.
+- Si deseas usar Firebase Hosting, hay un `firebase.json` y `.firebaserc` de ejemplo aquí. Reemplaza `YOUR_FIREBASE_PROJECT_ID` con tu ID de proyecto y ejecuta `firebase deploy`.
+
+## Nota sobre Firebase
+
+- Firebase se usa para almacenamiento de datos, no para el despliegue principal de la app en este repositorio.
+- Para conectar el frontend con Firebase, debes agregar el SDK de Firebase y configurar el objeto `firebaseConfig` en el JavaScript.
+- Si prefieres, puedes mantener el frontend en Vercel y usar Firebase solo como backend de datos.
+

@@ -1,0 +1,25 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Firebase
+.firebase/
+.firebaserc
+firebase.json
+
+# Node
+node_modules/
+
+# System
+.DS_Store
+Thumbs.db
+*.log
+
+# Vercel
+.vercel/
+
+# IDE
+.vscode/
